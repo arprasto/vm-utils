@@ -1,4 +1,4 @@
-yum update -y && yum install bind-utils && \
+yum update -y && yum install bind-utils -y && \
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
 
 mkdir /foldermounts && \
