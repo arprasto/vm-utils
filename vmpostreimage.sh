@@ -1,4 +1,4 @@
-yum update -y && yum install bind-utils -y && \
+yum update -y && yum install bind-utils -y && yum install git -y\
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
 
 mkdir /foldermounts && \
@@ -55,4 +55,26 @@ mkdir -p /etc/origin/master /foldermounts/etc/origin/master && \
 mount --rbind /foldermounts/etc/origin/master /etc/origin/master && \
 echo "/foldermounts/etc/origin/master /etc/origin/master none defaults,bind 0 0" >> /etc/fstab && \
 \
-ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys
+ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
+\
+mkdir -p /foldermounts/okd/gopath-folder && \
+echo "export GOPATH=/foldermounts/okd/gopath-folder">>~/.bashrc && \
+\
+wget https://dl.google.com/go/go1.13.1.linux-amd64.tar.gz && \
+\
+tar -xf go1.13.1.linux-amd64.tar.gz -C /foldermounts && \
+\
+echo "export PATH=$PATH:/foldermounts/go/bin">>~/.bashrc && \
+echo "export GOBIN=/foldermounts/go/bin">>~/.bashrc && \
+\
+source ~/.bashrc && go env -w GOPATH=/foldermounts/okd/gopath-folder && \
+\
+curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh && \
+\
+mkdir -p $GOPATH/src/github.com/openshift && git clone https://github.com/openshift/installer.git && \
+\
+cd $GOPATH/src/github.com/openshift/installer/hack && sh build.sh && \
+echo "export PATH=$PATH:$GOPATH/src/github.com/openshift/installer/bin">>~/.bashrc && source ~/.bashrc
+
+
+
