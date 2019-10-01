@@ -1,6 +1,7 @@
-yum update -y && yum install bind-utils -y && yum install git -y\
+yum update -y && yum install bind-utils -y && yum install git -y && \
+\
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
-
+\
 mkdir /foldermounts && \
 mount /dev/xvdc /foldermounts && \
 echo "/dev/xvdc /foldermounts xfs defaults,noatime 1 2" >> /etc/fstab && \
