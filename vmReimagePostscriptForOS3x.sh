@@ -1,12 +1,18 @@
+export LC_ALL="en_US.UTF-8" && \
+export LC_CTYPE="en_US.UTF-8" && \
+\
 yum update -y && yum install bind-utils -y && yum install git -y && \
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
-
+# hostnamectl set-hostname server8.cto-org-india.dns-cloud.net
+\
 mkdir /foldermounts && \
 mount /dev/xvdc /foldermounts && \
 echo "/dev/xvdc /foldermounts xfs defaults,noatime 1 2" >> /etc/fstab && \
+\
 mkdir -p /var/lib/docker /foldermounts/lib/docker && \
 mount --rbind /foldermounts/lib/docker /var/lib/docker && \
 echo "/foldermounts/lib/docker /var/lib/docker none defaults,bind 0 0" >> /etc/fstab && \
+\
 mkdir -p /var/lib/kubelet /foldermounts/lib/kubelet && \
 mount --rbind /foldermounts/lib/kubelet /var/lib/kubelet && \
 echo "/foldermounts/lib/kubelet /var/lib/kubelet none defaults,bind 0 0" >> /etc/fstab && \
@@ -59,7 +65,15 @@ mkdir -p /var/log /foldermounts/var/log && \
 mount --rbind /foldermounts/var/log /var/log && \
 echo "/foldermounts/var/log /var/log none defaults,bind 0 0" >> /etc/fstab && \
 \
-ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys 
+ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
 
+# for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 server5 server6 server8 server5.cto-org-india.dns-cloud.net server6.cto-org-india.dns-cloud.net server8.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
+# edit /etc/selinux/config
+# SELINUX=enforcing
+# SELINUXTYPE=targeted
 
-
+yum install wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct && \
+\
+rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
+easy_install Jinja2 && \
+yum update && reboot && yum install openshift-ansible
