@@ -101,6 +101,6 @@ yum install wget git net-tools bind-utils yum-utils iptables-services bridge-uti
 \
 rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
 easy_install Jinja2 && \
-yum update && systemctl status network && yum install openshift-ansible && \
+yum update && systemctl status network && systemctl show NetworkManager | grep ActiveState && yum install openshift-ansible && \
 
 reboot
