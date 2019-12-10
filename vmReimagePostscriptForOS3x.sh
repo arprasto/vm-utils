@@ -6,22 +6,22 @@ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && yum update && \
 # adding ose repo : /etc/yum.repos.d/ose.repo
 #[rhel-7-server-rpms]
 #name=rhel-7-server-rpms
-#baseurl=http://<server_IP>/repos/rhel-7-server-rpms 
+#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms
 #enabled=1
 #gpgcheck=0
 #[rhel-7-server-extras-rpms]
 #name=rhel-7-server-extras-rpms
-#baseurl=http://<server_IP>/repos/rhel-7-server-extras-rpms 
+#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-extras-rpms 
 #enabled=1
 #gpgcheck=0
 #[rhel-7-server-ansible-2.6-rpms]
 #name=rhel-7-server-ansible-2.6-rpms
-#baseurl=http://<server_IP>/repos/rhel-7-server-ansible-2.6-rpms 
+#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ansible-2.6-rpms 
 #enabled=1
 #gpgcheck=0
 #[rhel-7-server-ose-3.11-rpms]
 #name=rhel-7-server-ose-3.11-rpms
-#baseurl=http://<server_IP>/repos/rhel-7-server-ose-3.11-rpms 
+#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ose-3.11-rpms
 #enabled=1
 #gpgcheck=0
 \
