@@ -1,6 +1,30 @@
 export LC_ALL="en_US.UTF-8" && \
 export LC_CTYPE="en_US.UTF-8" && \
 \
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && yum update && \
+
+# adding ose repo : /etc/yum.repos.d/ose.repo
+#[rhel-7-server-rpms]
+#name=rhel-7-server-rpms
+#baseurl=http://<server_IP>/repos/rhel-7-server-rpms 
+#enabled=1
+#gpgcheck=0
+#[rhel-7-server-extras-rpms]
+#name=rhel-7-server-extras-rpms
+#baseurl=http://<server_IP>/repos/rhel-7-server-extras-rpms 
+#enabled=1
+#gpgcheck=0
+#[rhel-7-server-ansible-2.6-rpms]
+#name=rhel-7-server-ansible-2.6-rpms
+#baseurl=http://<server_IP>/repos/rhel-7-server-ansible-2.6-rpms 
+#enabled=1
+#gpgcheck=0
+#[rhel-7-server-ose-3.11-rpms]
+#name=rhel-7-server-ose-3.11-rpms
+#baseurl=http://<server_IP>/repos/rhel-7-server-ose-3.11-rpms 
+#enabled=1
+#gpgcheck=0
+\
 yum update -y && yum install bind-utils -y && yum install git -y && \
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
 # hostnamectl set-hostname server8.cto-org-india.dns-cloud.net
@@ -76,5 +100,4 @@ yum install wget git net-tools bind-utils yum-utils iptables-services bridge-uti
 \
 rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
 easy_install Jinja2 && \
-yum update && reboot && yum install openshift-ansible && \
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && yum update
+yum update && reboot && yum install openshift-ansible
