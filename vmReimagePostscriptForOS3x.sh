@@ -55,6 +55,10 @@ mkdir -p /etc/origin/master /foldermounts/etc/origin/master && \
 mount --rbind /foldermounts/etc/origin/master /etc/origin/master && \
 echo "/foldermounts/etc/origin/master /etc/origin/master none defaults,bind 0 0" >> /etc/fstab && \
 \
+mkdir -p /var/log /foldermounts/var/log && \
+mount --rbind /foldermounts/var/log /var/log && \
+echo "/foldermounts/var/log /var/log none defaults,bind 0 0" >> /etc/fstab && \
+\
 ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys 
 
 
