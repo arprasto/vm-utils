@@ -39,7 +39,7 @@ rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l
 rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/d/device-mapper-persistent-data-0.8.5-1.el7.x86_64.rpm && \
 rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l/lvm2-2.02.185-2.el7_7.2.x86_64.rpm && \
 
-yum install docker && systemctl start docker -y && systemctl enable docker && \
+yum install docker -y && systemctl start docker && systemctl enable docker && \
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && \
 \
 yum update -y && yum install bind-utils -y && yum install git -y && \
