@@ -1,6 +1,3 @@
-export LC_ALL="en_US.UTF-8" && \
-export LC_CTYPE="en_US.UTF-8" && \
-\
 # edit /etc/selinux/config
 # SELINUX=enforcing
 # SELINUXTYPE=targeted
@@ -27,8 +24,18 @@ export LC_CTYPE="en_US.UTF-8" && \
 #enabled=1
 #gpgcheck=0
 
-yum update && yum install docker && \
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && yum update && \
+export LC_ALL="en_US.UTF-8" && \
+export LC_CTYPE="en_US.UTF-8" && \
+\
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/d/device-mapper-event-libs-1.02.158-2.el7_7.2.x86_64.rpm && \
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/d/device-mapper-event-1.02.158-2.el7_7.2.x86_64.rpm && \
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l/libaio-0.3.109-13.el7.x86_64.rpm && \
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l/lvm2-libs-2.02.185-2.el7_7.2.x86_64.rpm && \
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/d/device-mapper-persistent-data-0.8.5-1.el7.x86_64.rpm && \
+rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l/lvm2-2.02.185-2.el7_7.2.x86_64.rpm && \
+
+yum install docker && systemctl start docker -y && systemctl enable docker && \
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && \
 \
 yum update -y && yum install bind-utils -y && yum install git -y && \
 mkfs.xfs -f -n ftype=1 -i size=512 -n size=8192 /dev/xvdc && \
@@ -93,7 +100,7 @@ mkdir -p /var/log /foldermounts/var/log && \
 mount --rbind /foldermounts/var/log /var/log && \
 echo "/foldermounts/var/log /var/log none defaults,bind 0 0" >> /etc/fstab && \
 \
-hostnamectl set-hostname server8.cto-org-india.dns-cloud.net && \
+#hostnamectl set-hostname server8.cto-org-india.dns-cloud.net && \
 ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
 
 for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 server5 server6 server8 server5.cto-org-india.dns-cloud.net server6.cto-org-india.dns-cloud.net server8.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
