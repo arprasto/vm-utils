@@ -29,6 +29,9 @@
 # 169.38.98.37 server5.cto-org-india.dns-cloud.net 10.162.120.243 server5
 # 169.38.98.46 server6.cto-org-india.dns-cloud.net 10.162.120.210 server6
 
+# vi /etc/sysconfig/network-scripts/ifcfg-eth1
+# NM_CONTROLLED=yes
+
 export LC_ALL="en_US.UTF-8" && \
 export LC_CTYPE="en_US.UTF-8" && \
 \
