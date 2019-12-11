@@ -24,7 +24,7 @@
 #enabled=1
 #gpgcheck=0
 
-# vi /etc/hosts
+# vi /etc/cloud/templates/hosts.redhat.tmpl
 # 169.38.98.35 server8.cto-org-india.dns-cloud.net 10.162.120.250 server8
 # 169.38.98.37 server5.cto-org-india.dns-cloud.net 10.162.120.243 server5
 # 169.38.98.46 server6.cto-org-india.dns-cloud.net 10.162.120.210 server6
