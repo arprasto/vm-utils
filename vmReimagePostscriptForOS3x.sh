@@ -31,6 +31,7 @@
 
 # vi /etc/sysconfig/network-scripts/ifcfg-eth1
 # NM_CONTROLLED=yes
+# PEERDNS=yes
 
 export LC_ALL="en_US.UTF-8" && \
 export LC_CTYPE="en_US.UTF-8" && \
