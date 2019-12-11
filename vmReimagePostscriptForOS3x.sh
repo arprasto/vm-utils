@@ -27,6 +27,7 @@ export LC_CTYPE="en_US.UTF-8" && \
 #enabled=1
 #gpgcheck=0
 
+yum update && yum install docker && \
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && yum update && \
 \
 yum update -y && yum install bind-utils -y && yum install git -y && \
