@@ -25,9 +25,9 @@
 #gpgcheck=0
 
 # vi /etc/cloud/templates/hosts.redhat.tmpl
-# 169.38.98.35 server8.cto-org-india.dns-cloud.net 10.162.120.250 server8
-# 169.38.98.37 server5.cto-org-india.dns-cloud.net 10.162.120.243 server5
-# 169.38.98.46 server6.cto-org-india.dns-cloud.net 10.162.120.210 server6
+# 169.38.98.35 master.cto-org-india.dns-cloud.net 10.162.120.250 master
+# 169.38.98.37 worker1.cto-org-india.dns-cloud.net 10.162.120.243 worker1
+# 169.38.98.46 worker2.cto-org-india.dns-cloud.net 10.162.120.210 worker2
 
 # vi /etc/sysconfig/network-scripts/ifcfg-eth1
 # NM_CONTROLLED=yes
@@ -116,13 +116,12 @@ yum install -y wget git net-tools bind-utils yum-utils iptables-services bridge-
 \
 yum update -y && reboot && \
 
-yum install openshift-ansible && \
+yum install openshift-ansible -y && \
 
 yum install bind-utils -y && yum install git -y
 
 ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
-for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 server5 server6 server8 server5.cto-org-india.dns-cloud.net server6.cto-org-india.dns-cloud.net server8.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
+for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 master worker1 worker2 master.cto-org-india.dns-cloud.net worker1.cto-org-india.dns-cloud.net worker2.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
 \
-#rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
 #easy_install Jinja2 && \
-systemctl restart NetworkManager && systemctl show NetworkManager | grep ActiveState
+systemctl restart NetworkManager && systemctl enable NetworkManager && systemctl show NetworkManager | grep ActiveState
