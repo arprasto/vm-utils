@@ -1,39 +1,67 @@
-# vi /etc/selinux/config
-# SELINUX=enforcing
-# SELINUXTYPE=targeted
+cat > /etc/selinux/config <<EOF
+SELINUX=enforcing
+SELINUXTYPE=targeted
+EOF
 
-# vi /etc/yum.repos.d/ose.repo
-#[rhel-7-server-rpms]
-#name=rhel-7-server-rpms
-#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms
-#enabled=1
-#gpgcheck=0
-#[rhel-7-server-extras-rpms]
-#name=rhel-7-server-extras-rpms
-#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-extras-rpms 
-#enabled=1
-#gpgcheck=0
-#[rhel-7-server-ansible-2.6-rpms]
-#name=rhel-7-server-ansible-2.6-rpms
-#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ansible-2.6-rpms 
-#enabled=1
-#gpgcheck=0
-#[rhel-7-server-ose-3.11-rpms]
-#name=rhel-7-server-ose-3.11-rpms
-#baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ose-3.11-rpms
-#enabled=1
-#gpgcheck=0
+cat > /etc/yum.repos.d/ose.repo <<EOF
+[rhel-7-server-rpms]
+name=rhel-7-server-rpms
+baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms
+enabled=1
+gpgcheck=0
+[rhel-7-server-extras-rpms]
+name=rhel-7-server-extras-rpms
+baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-extras-rpms 
+enabled=1
+gpgcheck=0
+[rhel-7-server-ansible-2.6-rpms]
+name=rhel-7-server-ansible-2.6-rpms
+baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ansible-2.6-rpms 
+enabled=1
+gpgcheck=0
+[rhel-7-server-ose-3.11-rpms]
+name=rhel-7-server-ose-3.11-rpms
+baseurl=http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-ose-3.11-rpms
+enabled=1
+gpgcheck=0
+EOF
 
-# vi /etc/cloud/templates/hosts.redhat.tmpl
-# 169.38.98.35 master.cto-org-india.dns-cloud.net 10.162.120.250 master
-# 169.38.98.37 worker1.cto-org-india.dns-cloud.net 10.162.120.243 worker1
-# 169.38.98.46 worker2.cto-org-india.dns-cloud.net 10.162.120.210 worker2
+cat > /etc/cloud/templates/hosts.redhat.tmpl <<EOF
+## template:jinja
+{#
+This file /etc/cloud/templates/hosts.redhat.tmpl is only utilized
+if enabled in cloud-config.  Specifically, in order to enable it
+you need to add the following to config:
+  manage_etc_hosts: True
+-#}
+# Your system has configured 'manage_etc_hosts' as True.
+# As a result, if you wish for changes to this file to persist
+# then you will need to either
+# a.) make changes to the master file in /etc/cloud/templates/hosts.redhat.tmpl
+# b.) change or remove the value of 'manage_etc_hosts' in
+#     /etc/cloud/cloud.cfg or cloud-config from user-data
+# 
+# The following lines are desirable for IPv4 capable hosts
+# 127.0.0.1 {{fqdn}} {{hostname}}
+127.0.0.1 localhost.localdomain localhost
+127.0.0.1 localhost4.localdomain4 localhost4
+169.38.98.35 master.cto-org-india.dns-cloud.net 10.162.120.250 master
+169.38.98.37 worker1.cto-org-india.dns-cloud.net 10.162.120.243 worker1
+169.38.98.46 worker2.cto-org-india.dns-cloud.net 10.162.120.210 worker2
 
-# vi /etc/sysconfig/network-scripts/ifcfg-eth1
-# NM_CONTROLLED=yes
-# PEERDNS=yes
+# The following lines are desirable for IPv6 capable hosts
+::1 {{fqdn}} {{hostname}}
+::1 localhost.localdomain localhost
+::1 localhost6.localdomain6 localhost6
+EOF
 
-#hostnamectl set-hostname server8.cto-org-india.dns-cloud.net && \
+#vi /etc/sysconfig/network-scripts/ifcfg-eth1
+NM_CONTROLLED=yes
+PEERDNS=yes
+
+#hostnamectl set-hostname master.cto-org-india.dns-cloud.net
+#hostnamectl set-hostname worker1.cto-org-india.dns-cloud.net
+#hostnamectl set-hostname worker2.cto-org-india.dns-cloud.net
 
 reboot
 
@@ -123,5 +151,4 @@ yum install bind-utils -y && yum install git -y
 ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
 for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 master worker1 worker2 master.cto-org-india.dns-cloud.net worker1.cto-org-india.dns-cloud.net worker2.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
 \
-#easy_install Jinja2 && \
 systemctl restart NetworkManager && systemctl enable NetworkManager && systemctl show NetworkManager | grep ActiveState
