@@ -110,16 +110,19 @@ rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/d
 rpm -i http://169.38.98.41/repo/ocp3.11/ocp311/ppa/rhel-7-server-rpms/Packages/l/lvm2-2.02.185-2.el7_7.2.x86_64.rpm && \
 
 yum install docker -y && systemctl start docker && systemctl enable docker && \
-rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && \
-\
-yum update -y && yum install bind-utils -y && yum install git -y && \
-
-ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
-
-for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 server5 server6 server8 server5.cto-org-india.dns-cloud.net server6.cto-org-india.dns-cloud.net server8.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
 
 yum install -y wget git net-tools bind-utils yum-utils iptables-services bridge-utils bash-completion kexec-tools sos psacct && \
+#rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release && \
 \
-rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
-easy_install Jinja2 && \
-yum -y update && systemctl restart NetworkManager && systemctl show NetworkManager | grep ActiveState && yum install openshift-ansible
+yum update -y && reboot && \
+
+yum install openshift-ansible && \
+
+yum install bind-utils -y && yum install git -y
+
+ssh-keygen -b 4096 -f ~/.ssh/id_rsa -N "" && cat ~/.ssh/id_rsa.pub | sudo tee -a ~/.ssh/authorized_keys && \
+for host in localhost 127.0.0.1 169.38.98.35 169.38.98.37 169.38.98.46 server5 server6 server8 server5.cto-org-india.dns-cloud.net server6.cto-org-india.dns-cloud.net server8.cto-org-india.dns-cloud.net; do ssh-copy-id -i ~/.ssh/id_rsa.pub $host; done
+\
+#rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm && yum -y install ansible && \
+#easy_install Jinja2 && \
+systemctl restart NetworkManager && systemctl show NetworkManager | grep ActiveState
