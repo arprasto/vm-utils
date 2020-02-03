@@ -1,0 +1,472 @@
+{
+    "kind": "List",
+    "apiVersion": "v1",
+    "metadata": {
+        "annotations": {
+            "description": "Jenkins service, without persistent storage.\n\nWARNING: Any data stored will be lost upon pod destruction. Only use this template for testing.",
+            "iconClass": "icon-jenkins",
+            "openshift.io/display-name": "Jenkins (Ephemeral)",
+            "openshift.io/documentation-url": "https://docs.okd.io/latest/using_images/other_images/jenkins.html",
+            "openshift.io/long-description": "This template deploys a Jenkins server capable of managing OpenShift Pipeline builds and supporting OpenShift-based oauth login.  The Jenkins configuration is stored in non-persistent storage, so this configuration should be used for experimental purposes only.",
+            "openshift.io/provider-display-name": "Red Hat, Inc.",
+            "openshift.io/support-url": "https://access.redhat.com",
+            "tags": "instant-app,jenkins"
+        },
+        "name": "bankscoreproductoffers-jenkins-ephemeral"
+    },
+    "items": [
+        {
+            "kind": "Template",
+            "apiVersion": "template.openshift.io/v1",
+            "metadata": {
+                "name": "bankscoreproductoffers-build-template",
+                "namespace": "india-cto-assets",
+                "creationTimestamp": "2019-08-28T08:47:13Z",
+                "annotations": {
+                    "iconClass": "icon-jenkins",
+                    "openshift.io/display-name": "Pipeline Build Example",
+                    "tags": "instant-app,jenkins"
+                }
+            },
+            "objects": [
+                  {
+                    "apiVersion": "v1",
+                    "kind": "ImageStream",
+                    "metadata": {
+                      "annotations": {
+                        "openshift.io/display-name": "Nginx HTTP server and a reverse proxy (nginx)"
+                      },
+                      "name": "nginx"
+                    },
+                    "spec": {
+                      "tags": [
+                        {
+                          "annotations": {
+                            "description": "Build and serve static content via Nginx HTTP Server and a reverse proxy (nginx) on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/nginx-container/blob/master/1.12/README.md.\n\nWARNING: By selecting this tag, your application will automatically update to use the latest version of Nginx available on OpenShift, including major versions updates.",
+                            "iconClass": "icon-nginx",
+                            "openshift.io/display-name": "Nginx HTTP server and a reverse proxy (Latest)",
+                            "openshift.io/provider-display-name": "Red Hat, Inc.",
+                            "sampleRepo": "https://github.com/sclorg/nginx-ex.git",
+                            "supports": "nginx",
+                            "tags": "builder,nginx"
+                          },
+                          "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "nginx:1.12",
+                            "namespace": "${DEPS_SRC_IMG_NAMESPACE}"
+                          },
+                          "name": "latest",
+                          "referencePolicy": {
+                            "type": "Local"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "apiVersion": "v1",
+                    "kind": "ImageStream",
+                    "metadata": {
+                      "annotations": {
+                        "openshift.io/display-name": "Python"
+                      },
+                      "name": "python"
+                    },
+                    "spec": {
+                      "tags": [
+                        {
+                          "annotations": {
+                            "description": "Build and run Python applications on CentOS 7. For more information about using this builder image, including OpenShift considerations, see https://github.com/sclorg/s2i-python-container/blob/master/3.6/README.md.\n\nWARNING: By selecting this tag, your application will automatically update to use the latest version of Python available on OpenShift, including major versions updates.",
+                            "iconClass": "icon-python",
+                            "openshift.io/display-name": "Python (Latest)",
+                            "openshift.io/provider-display-name": "Red Hat, Inc.",
+                            "sampleRepo": "https://github.com/sclorg/django-ex.git",
+                            "supports": "python",
+                            "tags": "builder,python"
+                          },
+                          "from": {
+                            "kind": "ImageStreamTag",
+                            "name": "python:3.6",
+                            "namespace": "${DEPS_SRC_IMG_NAMESPACE}"
+                          },
+                          "name": "latest",
+                          "referencePolicy": {
+                            "type": "Local"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                {
+                    "apiVersion": "v1",
+                    "kind": "ImageStream",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "kind": "BuildConfig",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    },
+                    "spec": {
+                        "output": {
+                            "to": {
+                                "kind": "ImageStreamTag",
+                                "name": "${APPLICATION_NAME}:latest",
+                                "namespace": "${NAMESPACE}"
+                            }
+                        },
+                        "source": {
+                            "git": {
+                                "ref": "master",
+                                "uri": "${GIT_URL}"
+                            },
+                            "sourceSecret": {
+                                "name": "${APPLICATION_NAME}-user-at-gitlab"
+                            },
+                            "type": "Git"
+                        },
+                        "strategy": {
+                            "dockerStrategy": {
+                                "dockerfilePath": "buildconfig/Dockerfile",
+                                "noCache": true,
+                                "forcePull": true
+                            }
+                        },
+                        "triggers": [
+                            {
+                                "imageChange": {}
+                            }
+                        ],
+                        "type": "ImageChange"
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "kind": "BuildConfig",
+                    "metadata": {
+                        "annotations": {
+                            "pipeline.alpha.openshift.io/uses": "[{\"name\": \"${APPLICATION_NAME}\", \"namespace\": \"${NAMESPACE}\", \"kind\": \"DeploymentConfig\"}]"
+                        },
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}-pipeline"
+                    },
+                    "spec": {
+                        "source": {
+                            "git": {
+                                "ref": "master",
+                                "uri": "${GIT_URL}"
+                            },
+                            "sourceSecret": {
+                                "name": "${APPLICATION_NAME}-user-at-gitlab"
+                            }
+                        },
+                        "strategy": {
+                            "jenkinsPipelineStrategy": {
+                                "jenkinsfilePath": "deployscripts/Jenkinsfile-for-OS"
+                            },
+                            "type": "JenkinsPipeline"
+                        },
+                        "triggers": [
+                            {
+                                "type": "GitHub",
+                                "github": {
+                                    "secret":"${GITHUBWEBHOOKURLSECRET}"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "kind": "DeploymentConfig",
+                    "metadata": {
+                        "generation": 1,
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    },
+                    "spec": {
+                        "replicas": 1,
+                        "selector": {
+                            "app": "${APPLICATION_NAME}",
+                            "deploymentconfig": "${APPLICATION_NAME}",
+                            "name": "${APPLICATION_NAME}"
+                        },
+                        "strategy": {
+                            "type": "Recreate"
+                        },
+                        "template": {
+                            "metadata": {
+                                "labels": {
+                                    "app": "${APPLICATION_NAME}",
+                                    "deploymentconfig": "${APPLICATION_NAME}",
+                                    "name": "${APPLICATION_NAME}"
+                                }
+                            },
+                            "spec": {
+                                "containers": [
+                                    {
+                                        "image": "${APPLICATION_NAME}:latest",
+                                        "livenessProbe": {
+                                            "httpGet": {
+                                                "port": 8011,
+                                                "scheme":"HTTP",
+                                                "path":"/"
+                                            },
+                                            "initialDelaySeconds": 30,
+                                            "periodSeconds": 100,
+                                            "successThreshold": 1,
+                                            "timeoutSeconds": 100000
+                                        },
+                                        "name": "${APPLICATION_NAME}",
+                                        "ports": [
+                                            {
+                                                "containerPort": 8011,
+                                                "protocol": "TCP"
+                                            }
+                                        ],
+                                        "readinessProbe": {
+                                            "exec": {
+                                                "command": [
+                                                    "/bin/sh",
+                                                    "-i",
+                                                    "-c",
+                                                    "echo test-cmd"
+                                                ]
+                                            },
+                                            "initialDelaySeconds": 30,
+                                            "periodSeconds": 100,
+                                            "successThreshold": 1,
+                                            "timeoutSeconds": 100000
+                                        },
+                                        "resources": {
+                                            "limits": {
+                                                "cpu": "${MAX_CPU_LIMIT}",
+                                                "memory": "${MAX_MEMORY_LIMIT}"
+                                            },
+                                            "requests": {
+                                                "cpu": "${MIN_CPU_LIMIT}",
+                                                "memory": "${MIN_MEMORY_LIMIT}"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        "triggers": [
+                            {
+                                "type": "ConfigChange"
+                            },
+                            {
+                                "imageChangeParams": {
+                                    "automatic": true,
+                                    "containerNames": [
+                                        "${APPLICATION_NAME}"
+                                    ],
+                                    "from": {
+                                        "kind": "ImageStreamTag",
+                                        "name": "${APPLICATION_NAME}:latest",
+                                        "namespace": "${NAMESPACE}"
+                                    }
+                                },
+                                "type": "ImageChange"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "kind": "Route",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    },
+                    "spec": {
+                        "host": "${APPLICATION_DOMAIN}",
+                        "ports": [
+                            {
+                                "name": "${APPLICATION_NAME}",
+                                "port": 8011,
+                                "targetPort": 8011
+                            }
+                        ],
+                        "to": {
+                            "kind": "Service",
+                            "name": "${APPLICATION_NAME}"
+                        }
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "kind": "Service",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}"
+                    },
+                    "spec": {
+                        "ports": [
+                            {
+                                "name": "8080-tcp",
+                                "port": 8011,
+                                "protocol": "TCP",
+                                "targetPort": 8011,
+                                "nodePort": 30020
+                            }
+                        ],
+                        "selector": {
+                            "app": "${APPLICATION_NAME}",
+                            "deploymentconfig": "${APPLICATION_NAME}",
+                            "name": "${APPLICATION_NAME}"
+                        },
+                        "type": "NodePort"
+                    }
+                },
+                {
+                    "apiVersion": "autoscaling/v1",
+                    "kind": "HorizontalPodAutoscaler",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}",
+                        "namespace": "${NAMESPACE}"
+                    },
+                    "spec": {
+                        "maxReplicas": 2,
+                        "minReplicas": 1,
+                        "scaleTargetRef": {
+                            "apiVersion": "v1",
+                            "kind": "DeploymentConfig",
+                            "name": "${APPLICATION_NAME}"
+                        },
+                        "targetCPUUtilizationPercentage": 90
+                    }
+                },
+                {
+                    "apiVersion": "v1",
+                    "data": {
+                        "WebHookSecretKey": "YmFua3Njb3JlcHJvZHVjdG9mZmVyc3dlYmhvb2tzZWNyZXRrZXkK"
+                    },
+                    "kind": "Secret",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}webhooksecret",
+                        "namespace": "${NAMESPACE}"
+                    },
+                    "type": "Opaque"
+                },
+                {
+                    "apiVersion": "v1",
+                    "data": {
+                        "password": "${GITHUB_USER_SECRET}",
+                        "username": "${GITHUB_USER_NAME}"
+                    },
+                    "kind": "Secret",
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}"
+                        },
+                        "name": "${APPLICATION_NAME}-user-at-gitlab",
+                        "namespace": "${NAMESPACE}"
+                    },
+                    "type": "kubernetes.io/basic-auth"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "APPLICATION_NAME",
+                    "displayName": "Application name",
+                    "description": "The name of the application",
+                    "value": "bankscoreproductoffers"
+                },
+                {
+                    "name": "GIT_URL",
+                    "displayName": "Git url",
+                    "description": "The url of the repo",
+                    "value": "https://github.ibm.com/IBM-India-CTO-ENG-Assets/Banking-Scoring-and-Product-Offerings.git"
+                },
+                {
+                    "name": "NAMESPACE",
+                    "displayName": "namespace",
+                    "description": "namespace",
+                    "value": "india-cto-assets"
+                },
+                {
+                    "name": "GITHUB_USER_NAME",
+                    "displayName": "GitHub username",
+                    "description": "GitHub username",
+                    "value": "YXJwcmFzdG8="
+                },
+                {
+                    "name": "GITHUB_USER_SECRET",
+                    "displayName": "Generic Secret",
+                    "description": "A secret string used with GITHUB_USER_NAME.",
+                    "value": "NzcyYzYyM2EzNTA2NDVhZGNjMTZkOGRjYjc4MzA0MGJjMDcyY2U0Nw=="
+                },
+                {
+                    "name": "MAX_MEMORY_LIMIT",
+                    "displayName": "Max Memory Limit",
+                    "description": "Maximum amount of memory the Node.js container can use.",
+                    "value": "512Mi",
+                    "required": true
+                },
+                {
+                    "name": "MIN_MEMORY_LIMIT",
+                    "displayName": "Min Memory Limit",
+                    "description": "Minimum amount of memory the Node.js container can use.",
+                    "value": "128Mi",
+                    "required": true
+                },
+                {
+                    "name": "MAX_CPU_LIMIT",
+                    "displayName": "Max CPU Limit",
+                    "description": "Maximum amount of cpu the Node.js container can use.",
+                    "value": "100m",
+                    "required": true
+                },
+                {
+                    "name": "MIN_CPU_LIMIT",
+                    "displayName": "Min CPU Limit",
+                    "description": "Minimum amount of CPU the Node.js container can use.",
+                    "value": "10m",
+                    "required": true
+                },
+                {
+                    "name": "APPLICATION_DOMAIN",
+                    "displayName": "Application Hostname",
+                    "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted."
+                },
+                {
+                    "name": "DEPS_SRC_IMG_NAMESPACE",
+                    "displayName": "dependencies src img namespace",
+                    "description": "namespace where dependencies imagestream exists",
+                    "value": "openshift"
+                },
+                {
+                    "name": "GITHUBWEBHOOKURLSECRET",
+                    "displayName": "secret need to be specified while forming webhook url",
+                    "description": "secret need to be specified while forming webhook url",
+                    "value": "YmFua3Njb3JlcHJ"
+                }
+            ]
+        }
+    ]
+}
