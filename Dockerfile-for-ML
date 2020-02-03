@@ -1,0 +1,54 @@
+FROM buildpack-deps:stretch
+
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+
+ENV PYTHON_VERSION=3.6
+
+RUN apt-get update --fix-missing && \
+    apt-get install -y wget bzip2 ca-certificates curl git libsndfile1 cmake && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-4.5.12-Linux-x86_64.sh -O ~/miniconda.sh && \
+    /bin/bash ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda update -n base -c defaults conda && \
+    /opt/conda/bin/conda install -y python=$PYTHON_VERSION && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+    echo "conda activate base" >> ~/.bashrc
+
+ENV PATH /opt/conda/bin:$PATH
+
+ENV TINI_VERSION v0.18.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+
+RUN mkdir -p /opt/app/work-dir && \
+    rm /bin/sh && \
+    ln -sv /bin/bash /bin/sh && \
+    echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
+    chgrp root /etc/passwd && chmod ug+rw /etc/passwd
+
+#RUN conda install -y tensorflow
+
+RUN python3 -m ensurepip \
+ && rm -r /usr/lib/python*/ensurepip \
+ && pip install --upgrade pip setuptools \
+ && rm -r /root/.cache
+
+EXPOSE 8002
+
+WORKDIR /opt/app/work-dir
+
+ADD . /opt/app/work-dir
+
+RUN pip install --no-cache-dir -r /opt/app/work-dir/requirements.txt
+
+RUN pip freeze
+
+CMD [ "python","--version" ]
+
+WORKDIR /opt/app/work-dir
+ENTRYPOINT [ "python","main.py" ]
