@@ -1,0 +1,43 @@
+pipeline {
+    options {
+      timeout(time: 10, unit: 'HOURS')
+    }
+    agent {
+        node {label 'master'}
+    }
+
+    triggers {
+        pollSCM('')
+    }
+
+    environment {
+        APPLICATION_NAME = 'bankscoreproductoffers'
+    }
+
+    stages {
+        stage('Build Application') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                            timeout(10*60){
+                            openshiftBuild(buildConfig: '${APPLICATION_NAME}', showBuildLogs: 'true')
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Deploy Application') {
+            steps {
+                script {
+                    openshift.withCluster() {
+                        openshift.withProject() {
+                            openshiftDeploy(deploymentConfig: '${APPLICATION_NAME}')
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
