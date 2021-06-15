@@ -1,0 +1,123 @@
+3 steps
+A: Download the installer package.
+    -- installer for XE 18c
+    wget https://download.oracle.com/otn-pub/otn_software/db-express/oracle-database-xe-18c-1.0-1.x86_64.rpm
+    -- oracle docker repository
+    git clone https://github.com/oracle/docker-images.git
+    -- Post download steps
+    a. copy the installer into  docker-images/OracleDatabase/SingleInstance/dockerfiles/18.4.0 (18.4.0 is the version available)
+
+B: Install and build the container.
+    -- run the bvelow commands
+    cd docker-images/OracleDatabase/SingleInstance/dockerfiles
+    ./buildDockerImage.sh -v 18.4.0 -x
+    -- check to see if the image is created
+    docker images
+    --> REPOSITORY              TAG           IMAGE ID          CREATED           SIZE
+        oracle/database         18.4.0-xe     6a5a6370de97      1 minute ago       8.57GB
+
+C: Run & Configure the database.
+    -- Docker run using the below commands will create a Configure
+    docker run --name oracle-18c \
+    -d  \
+    -p 51521:1521 \
+    -p 55500:5500 \
+    -v /root/oracleXE/data:/opt/oracle/oradata \
+    -e ORACLE_PWD=password \
+    -e ORACLE_CHARACTERSET=AL32UTF8 \
+      oracle/database:18.4.0-xe
+-- updated command for curam user already created
+        docker run --name oracle-18c-curam \
+            -d \
+            -p 51521:1521 \
+            -p 55500:5500 \
+            -v /root/oracleXE/data:/opt/oracle/oradata \
+            -e ORACLE_PWD=password \
+            -e ORACLE_CHARACTERSET=AL32UTF8 \
+            oracle-18c-curam:latest
+        
+
+    -- Understanding parameters
+    --name oracle-curam specifies the container name. If this option is not used, a random name is assigned by the Docker daemon.
+    -d runs the container in detached (background) mode.
+    -p 51521:1521 and -p 55500:5500 map a host to a container port.
+    -e ORACLE_PWD=password and -e ORACLE_CHARACTERSET=AL32UTF8 set the environment variables.
+    Here, ORACLE_PWD sets the administrative password, and ORACLE_CHARACTERSET sets the database’s character set.
+
+oracle-18c-curam:latest
+
+
+D: create a new user for curam container
+
+-- connect using the below command inside the container
+
+sqlplus sys/password@//localhost:1521/XE as sysdba
+-- create below user and try to connect
+alter session set container=XEPDB1;
+create user ceuser identified by password;
+grant connect,dba to ceuser;
+alter database datafile '/opt/oracle/oradata/XE/XEPDB1/users01.dbf' autoextend on maxsize unlimited;
+
+
+-- check volumes for container
+ docker inspect --format="{{.Mounts}}" oracle-18c
+
+sqlplus curamibmce/password@//localhost:1521/XE as sysdba
+
+sqlplus ceuser/password@//localhost:1521/XEPDB1
+
+
+pushing your images to sonatype
+Create nexus-data folder within /root directory and provide write privilege
+
+chmod 777 -R /root/nexus-data
+
+Run the nexus image
+
+docker run -d -p 8081:8081 -p 8082:8082 --name nexus -v /root/nexus-data:/nexus-data sonatype/nexus3
+
+The above command is going to map 8081 and 8082 ports in the host VM. On the 8081 port, nexus webUI can be accessed using the below link:
+
+http://seama1.fyre.ibm.com:8081/
+
+tag the image you want to push 
+
+ docker tag 247f26866498 seama1.fyre.ibm.com:8082/oracle18c-curam
+ docker images
+ docker push seama1.fyre.ibm.com:8082/oracle18c-curam
+
+
+ On the CI server VM, configure docker registry to connect to the nexus repo created by editing the following file:
+
+vi /etc/docker/daemon.json
+
+and add the following content:
+
+{
+	"insecure-registries" : [seama1.fyre.ibm.com:8082"]
+}
+
+nexus login
+admin
+Andr9100
+
+
+ docker run --name oracle-18c-curam \
+            -d \
+            -p 51521:1521 \
+            -p 55500:5500 \
+            -v /root/oracleXE/data:/opt/oracle/oradata \
+            -e ORACLE_PWD=password \
+            -e ORACLE_CHARACTERSET=AL32UTF8 \
+  seama1.fyre.ibm.com:8082/oracle18c-curam:latest
+
+
+  Hi TAAS team,
+  I tried creating  a new repository in the team artifcatory, after applying changes, saw this message as posted. its been 15 hours,
+  I dont see the new repo created (see image).
+  I have opened a ticket 13381
+
+  Name of the artifactory - wh-spm-blore-isl-team-artifactory
+
+  Please let me know if i am missing step or how i can resolve this issue
+

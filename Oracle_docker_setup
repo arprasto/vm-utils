@@ -1,0 +1,63 @@
+
+
+Link for reference
+https://blogs.oracle.com/oraclemagazine/deliver-oracle-database-18c-express-edition-in-containers
+
+- docker reference
+https://github.com/oracle/docker-images/tree/master/OracleDatabase/SingleInstance
+
+Download the linkx version of docker from the location Below
+https://www.oracle.com/technical-resources/ - search for the XE version you want download and download the linux version you want. I have downloaded 11.2.0.2
+Download the following file for 11 G xe oracle-xe-11.2.0-1.0.x86_64.rpm.zip
+copy the file into the same folder as the docker file for 11g, you will fing the file after cloning the following git repository
+
+-https://github.com/oracle/docker-images/blob/master/OracleDatabase/SingleInstance/
+
+-copy the downloaded oracle zip file - oracle-xe-11.2.0-1.0.x86_64.rpm.zip - in the same folder as dockerfile. the docker file may be called dockerfile.xe
+and we may have to rename to the file to dockerfile and execute the following command
+
+- docker build -t oracle/database:11.2.0.2-xe . (there is a . in the end indicating the folder that contains the dockerfile,  pwd, the current folder).
+
+
+Once the image is built you can use the below command to start a container using the image.
+
+-- to run Oracle
+docker run --shm-size=1g -p 1521:1521 -p 8080:8080 -e ORACLE_PWD=password -v oradata01:/u01/app/oracle/oradata --detach --name oracle_XE oracle/database:11.2.0.2-xe
+
+
+-- use this location to understand the different options set in the above command.
+
+https://github.com/oracle/docker-images/tree/master/OracleDatabase/SingleInstance
+
+-- you can log in using sql plus using sys as below.
+
+sqlplus sys/password@//localhost:1521/XE as sysdba
+
+-- create a new user and grant him privileges.
+
+create user curamibm identified by password;
+
+ grant connect,dba to curamibm;
+
+alter database datafile '/u01/app/oracle/oradata/XE/system.dbf' autoextend on maxsize unlimited;
+
+
+then use sql developer or any other tool outside docker to connect to it.
+
+-- host:localhost
+   database --> service name  : XE
+   port 1521 ( as bounded in the run oracle command.)
+
+
+-- to execute and access inside the docker please use below command
+
+ docker exec -it cranky_dhawan bash
+
+ cranky_dhawan is the system assigned name for my container, bash the command its executing, the result is a bash shell will open as
+
+
+ select tablespace_name,bytes from dba_data_files
+ where  tablespace_name = 'SYSTEM';
+
+ select file_name, file_id, status from dba_data_files
+where  tablespace_name = 'SYSTEM';
