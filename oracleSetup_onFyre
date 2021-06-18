@@ -52,6 +52,9 @@ D: create a new user for curam container
 -- connect using the below command inside the container
 
 sqlplus sys/password@//localhost:1521/XE as sysdba
+-- alter timeout cinfig in file $ORACLE_HOME/network/admin/SQLNET.ORA add below lines
+SQLNET.INBOUND_CONNECT_TIMEOUT = 180
+INBOUND_CONNECT_TIMEOUT_LISTENER = 120
 -- create below user and try to connect
 alter session set container=XEPDB1;
 create user ceuser identified by password;
